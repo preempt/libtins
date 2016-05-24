@@ -5,14 +5,14 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  * * Redistributions of source code must retain the above copyright
  *   notice, this list of conditions and the following disclaimer.
  * * Redistributions in binary form must reproduce the above
  *   copyright notice, this list of conditions and the following disclaimer
  *   in the documentation and/or other materials provided with the
  *   distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -66,7 +66,7 @@ const size_t StreamFollower::DEFAULT_MAX_SACKED_INTERVALS = 1024;
 const uint32_t StreamFollower::DEFAULT_MAX_BUFFERED_BYTES = 3 * 1024 * 1024; // 3MB
 const StreamFollower::timestamp_type StreamFollower::DEFAULT_KEEP_ALIVE = minutes(5);
 
-StreamFollower::StreamFollower() 
+StreamFollower::StreamFollower()
 : max_buffered_chunks_(DEFAULT_MAX_BUFFERED_CHUNKS),
   max_buffered_bytes_(DEFAULT_MAX_BUFFERED_BYTES), last_cleanup_(0),
   stream_keep_alive_(DEFAULT_KEEP_ALIVE), attach_to_flows_(false) {
@@ -94,7 +94,7 @@ void StreamFollower::process_packet(PDU& packet, const timestamp_type& ts) {
     if (iter == streams_.end()) {
         // Start tracking if they're either SYNs or they contain data (attach
         // to an already running flow).
-        if (tcp->flags() == TCP::SYN || (attach_to_flows_ && tcp->find_pdu<RawPDU>() != 0)) {
+        if ((tcp->flags() | TCP::SYN) != 0 || (attach_to_flows_ && tcp->find_pdu<RawPDU>() != 0)) {
             iter = streams_.insert(make_pair(identifier, Stream(packet, ts))).first;
             iter->second.setup_flows_callbacks();
             if (on_new_connection_) {
@@ -103,7 +103,7 @@ void StreamFollower::process_packet(PDU& packet, const timestamp_type& ts) {
             else {
                 throw callback_not_set();
             }
-            if (tcp->flags() == TCP::SYN) {
+            if ((tcp->flags() | TCP::SYN) != 0) {
                 process = false;
             }
             else {
@@ -121,12 +121,12 @@ void StreamFollower::process_packet(PDU& packet, const timestamp_type& ts) {
     if (process) {
         Stream& stream = iter->second;
         stream.process_packet(packet, ts);
-        // Check for different potential termination 
-        size_t total_chunks = stream.client_flow().buffered_payload().size() + 
+        // Check for different potential termination
+        size_t total_chunks = stream.client_flow().buffered_payload().size() +
                               stream.server_flow().buffered_payload().size();
         uint32_t total_buffered_bytes = stream.client_flow().total_buffered_bytes() +
                                         stream.server_flow().total_buffered_bytes();
-        bool terminate_stream = total_chunks > max_buffered_chunks_ || 
+        bool terminate_stream = total_chunks > max_buffered_chunks_ ||
                                 total_buffered_bytes > max_buffered_bytes_;
         TerminationReason reason = BUFFERED_DATA;
         #ifdef TINS_HAVE_ACK_TRACKER
