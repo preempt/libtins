@@ -31,6 +31,7 @@
 #define TINS_TCP_IP_STREAM_ID_H
 
 #include <tins/config.h>
+#include "../macros.h"
 
 #ifdef TINS_HAVE_TCPIP
 
@@ -56,7 +57,7 @@ class Stream;
  *
  * This struct implements operator< so it can be used as a key on std::maps
  */
-struct StreamIdentifier {
+struct TINS_API StreamIdentifier {
     /**
      * The type used to store each endpoint's address
      */

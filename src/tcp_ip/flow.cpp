@@ -126,6 +126,10 @@ void Flow::advance_sequence(uint32_t seq) {
     data_tracker_.advance_sequence(seq);
 }
 
+void Flow::sequence_number(uint32_t seq) {
+    data_tracker_.sequence_number(seq);
+}
+
 void Flow::update_state(const TCP& tcp) {
     if ((tcp.flags() & TCP::FIN) != 0) {
         state_ = FIN_SENT;

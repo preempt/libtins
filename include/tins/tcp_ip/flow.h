@@ -179,7 +179,7 @@ public:
      * \param seq The sequence number to skip to.
      */
     void advance_sequence(uint32_t seq);
-
+    void sequence_number(uint32_t seq);
     /**
      * Indicates whether this flow uses IPv6 addresses
      */
